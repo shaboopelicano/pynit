@@ -48,6 +48,10 @@ class Janela:
     def callback_teclado(self, janela, key, scancode, action, mods):
         if key is glfw.KEY_ESCAPE:
             glfw.set_window_should_close(janela, True)
+        elif key is glfw.KEY_A:
+            self.mover_triangulo_esq()
+        elif key is glfw.KEY_D:
+            self.mover_triangulo_dir()
 
     def desenhar(self):
         # gera o buffer
@@ -88,4 +92,14 @@ class Janela:
     def atualizar_cores(self):
         for i in range(3):
             self.cores[i] = self.cores[i] + numpy.float32(0.01)
-        print(self.cores)
+        
+    def mover_triangulo_esq(self):
+        self.vertices[0] = self.vertices[0] - numpy.float32(0.01)
+        self.vertices[3] = self.vertices[3] - numpy.float32(0.01)
+        self.vertices[6] = self.vertices[6] - numpy.float32(0.01)
+        
+    def mover_triangulo_dir(self):
+        self.vertices[0] = self.vertices[0] + numpy.float32(0.01)
+        self.vertices[3] = self.vertices[3] + numpy.float32(0.01)
+        self.vertices[6] = self.vertices[6] + numpy.float32(0.01)
+        
