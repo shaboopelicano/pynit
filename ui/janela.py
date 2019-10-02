@@ -5,6 +5,9 @@ from ui.config import *
 from utils.shader_loader import ShaderLoader
 import numpy
 import sys
+from PIL import Image
+import os
+
 
 
 class Janela:
@@ -15,10 +18,10 @@ class Janela:
         #     0.5, 0.5, 0.0,
         # ]
         self.vertices = [
-            -0.5, -0.5, 0.0,1.0,0.0,0.0,
-            0.0, 0.0, 0.0,0.0,1.0,0.0,
-            0.0, -0.5, 0.0,0.0,0.0,1.0,
-            -0.5,0.0,0.0,0.0,0.0,0.0
+            -0.5, -0.5, 0.0,1.0,0.0,0.0,0.0,0.0,
+            0.0, 0.0, 0.0,0.0,1.0,0.0,1.0,1.0,
+            0.0, -0.5, 0.0,0.0,0.0,1.0,1.0,0.0,
+            -0.5,0.0,0.0,0.0,0.0,0.0,0.0,1.0
         ]
         self.cores = [
             0.0, 0.0, 0.0
@@ -79,6 +82,26 @@ class Janela:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,self.ebo)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,self.indices.nbytes,self.indices,GL_STATIC_DRAW)
 
+        self.texture = glGenBuffers(1)
+        glBindTexture(GL_TEXTURE_2D,self.texture)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+        diretorio = (os.path.dirname(os.path.abspath(__file__)))
+        dir_raiz = os.path.abspath(os.path.join(diretorio,os.pardir))
+        assets_dir = os.path.abspath(os.path.join(dir_raiz,"assets"))
+        img_dir = os.path.abspath(os.path.join(assets_dir,"img"))
+        crate_img = os.path.abspath(os.path.join(img_dir,"crate.jpg"))
+        
+        self.image = Image.open(crate_img)
+        self.img_data = numpy.array(list(self.image.getdata()), numpy.uint8)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, self.img_data)
+
+
+        
+
 
     def desenhar(self):
         # for i in range(len(self.vertices)):
@@ -94,16 +117,36 @@ class Janela:
             self.vertex_shader.shader_program, "position")
         cor = glGetAttribLocation(
             self.vertex_shader.shader_program, "cor")
+
+        tex = glGetAttribLocation(
+            self.vertex_shader.shader_program, "textura")
+
         # passa os dados para aqueel atributo
         # id do atributo , tamanho , tipo , normalizado ?, a separacao entre cada conjunto e o inicio
         # glVertexAttribPointer(position, 3, GL_FLOAT,
         #                       GL_FALSE, 12, ctypes.c_void_p(0))
-        glVertexAttribPointer(position, 3, GL_FLOAT,
-                              GL_FALSE, 24, ctypes.c_void_p(0))
-        glVertexAttribPointer(cor, 3, GL_FLOAT,
-                              GL_FALSE, 24, ctypes.c_void_p(12))
-        glEnableVertexAttribArray(position)
-        glEnableVertexAttribArray(cor)
+        # glVertexAttribPointer(position, 3, GL_FLOAT,
+        #                       GL_FALSE, 32, ctypes.c_void_p(0))
+        # glVertexAttribPointer(cor, 3, GL_FLOAT,
+        #                       GL_FALSE, 32, ctypes.c_void_p(12))
+        # glVertexAttribPointer(tex, 3, GL_FLOAT,
+        #                       GL_FALSE, 32 , ctypes.c_void_p(24))
+
+        glVertexAttribPointer(0, 3, GL_FLOAT,
+                              GL_FALSE, 32, ctypes.c_void_p(0))
+        glVertexAttribPointer(1, 3, GL_FLOAT,
+                              GL_FALSE, 32, ctypes.c_void_p(12))
+        glVertexAttribPointer(2, 2, GL_FLOAT,
+                              GL_FALSE, 32 , ctypes.c_void_p(24))
+
+
+        # glEnableVertexAttribArray(position)
+        # glEnableVertexAttribArray(cor)
+        # glEnableVertexAttribArray(tex)
+
+        glEnableVertexAttribArray(0)
+        glEnableVertexAttribArray(1)
+        glEnableVertexAttribArray(2)
 
         # vbo2 = glGenBuffers(1)
         # glBindBuffer(GL_ARRAY_BUFFER, vbo2)
@@ -114,7 +157,7 @@ class Janela:
         #                       0, ctypes.c_void_p(0))
         # glEnableVertexAttribArray(cor)
 
-        glUseProgram(self.vertex_shader.shader_program)
+        glUseProgram(self.vertex_shader.shader_program) 
 
         glClear(GL_COLOR_BUFFER_BIT)
         # glDrawArrays(GL_TRIANGLES, 0, 3)
